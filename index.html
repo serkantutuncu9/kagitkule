@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Kağıt Kule Skor Tablosu</title>
+    <title>STEM Kağıt Kule Canlı Skor Tablosu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -15,9 +15,8 @@
                         sans: ['Montserrat', 'sans-serif'],
                     },
                     colors: {
-                        darkBg: '#0a0e17',
-                        cardBg: '#111625',
-                        borderClr: '#1f293d',
+                        darkBg: '#0f111a',
+                        cardBg: '#161925',
                         vurgu: '#00f2ff',
                         altin: '#ffd700',
                         gumus: '#c0c0c0',
@@ -184,8 +183,8 @@
     let currentPage = 0;
     const itemsPerPage = 9; 
     
-    // Google Sheets CSV yayın linkinizi bu alana yapıştırmalısınız
-    const CSV_URL = 'BURAYA_SENSE_ETABLO_YAYIN_LINKINI_YAPISTIRMALISIN';
+    // Gönderdiğin tablonun Kağıt Kule (gid=763264118) sekmesine ait canlı CSV yayın linki
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVfTp7wZiJaJ95n2H7NWiEWQIvn6SX7V6t8hK0FbsqCirFD-Os7KIMe4O1_Im3uOERV3VUYwdKcYod/pub?output=csv&gid=763264118';
 
     function toggleFullScreen() {
         if (!document.fullscreenElement) document.documentElement.requestFullscreen();
@@ -196,12 +195,6 @@
     setInterval(updateClock, 1000);
 
     async function fetchData() {
-        if (CSV_URL.includes("BURAYA_SENSE_ETABLO_YAYIN_LINKINI_YAPISTIRMALISIN") || !CSV_URL) {
-            allEntries = [];
-            renderTable();
-            return;
-        }
-
         try {
             const response = await fetch(CSV_URL + '&cb=' + Date.now());
             const rawData = await response.text();
@@ -213,20 +206,22 @@
             for (let i = 1; i < rows.length; i++) {
                 if (!rows[i].trim()) continue;
                 
-                const cols = rows[i].split(separator);
+                const cols = rows[i].split(separator).map(col => col.replace(/^"|"$/g, '').trim());
                 
                 // cols[0]: Sıra No | cols[1]: takimid | cols[2]: takimadi | cols[3]: durum | cols[4]: yükseklik | cols[5]: süre
-                if (cols[2] && cols[2].trim() !== "" && !cols[2].includes("takimadi")) {
-                    let nameVal = cols[2].replace(/"/g, '').trim();
-                    let statusVal = cols[3]?.replace(/"/g, '').trim() || '';
-                    let heightRaw = cols[4]?.trim() || '0';
-                    let timeRaw = cols[5]?.trim() || '0';
+                if (cols[2] && cols[2].trim() !== "" && !cols[2].toLowerCase().includes("takimadi")) {
+                    let nameVal = cols[2];
+                    let statusVal = cols[3] || '';
+                    let heightRaw = cols[4] || '0';
+                    let timeRaw = cols[5] || '0';
                     
                     let heightVal = parseFloat(heightRaw.replace(',', '.'));
                     let timeVal = parseFloat(timeRaw.replace(',', '.'));
                     
-                    // Veri girilmemiş veya lobi aşamasında bekleyen kule tespiti
-                    const isWaiting = (statusVal === '' || statusVal === 'Yarışma bekleniyor...') && heightVal === 0 && timeVal === 0;
+                    // Takım alandaysa fakat hakem henüz veri girmediyse bekleme durumu
+                    const isWaiting = (statusVal === '' || statusVal === 'Yarışma bekleniyor...') && 
+                                      (isNaN(heightVal) || heightVal === 0) && 
+                                      (isNaN(timeVal) || timeVal === 0);
                     
                     tempEntries.push({
                         name: nameVal,
@@ -239,7 +234,9 @@
             }
             allEntries = tempEntries;
             sortEntries();
-        } catch (err) { console.error("Veri hatası:", err); }
+        } catch (err) { 
+            console.error("Veri okuma hatası:", err); 
+        }
     }
 
     function sortEntries() {
@@ -254,7 +251,7 @@
             if (a.status === "Ayakta" && b.status !== "Ayakta") return -1;
             if (a.status !== "Ayakta" && b.status === "Ayakta") return 1;
 
-            // 3. KURAL: Kule durumu aynı ise (örneğin ikisi de ayakta veya ikisi de yıkık) yükseklik değerine göre sıralanır (Büyükten küçüğe).
+            // 3. KURAL: Kule durumu aynı ise yükseklik değerine göre sıralanır (Büyükten küçüğe).
             if (b.height !== a.height) {
                 return b.height - a.height;
             }
@@ -307,9 +304,15 @@
                 specialClass = "rank-3";
             }
 
+            // Takım isimlerinin başındaki numaraları (varsa) temizleyerek ekrana bas
+            let formattedName = item.name;
+            if (formattedName.match(/^\d+\s+/)) {
+                formattedName = formattedName.replace(/^\d+\s+/, '');
+            }
+
             html += `<tr class="${specialClass}">
                 <td class="col-rank">${rankDisplay}</td>
-                <td class="col-name"><strong>${item.name}</strong></td>
+                <td class="col-name"><strong>${formattedName}</strong></td>
                 <td class="col-status">${statusText}</td>
                 <td class="col-height">${isWaiting ? '-' : item.height + ' cm'}</td>
                 <td class="col-time">${isWaiting ? '-' : item.time + ' sn'}</td>
@@ -325,6 +328,7 @@
         await fetchData(); 
         renderTable();    
 
+        // Her 12 saniyede bir sayfayı kaydırır ve arka planda yeni verileri çeker
         setInterval(async () => {
             if (allEntries.length === 0) return;
             const totalPages = Math.ceil(allEntries.length / itemsPerPage);
