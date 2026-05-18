@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Kağıt Kule Skor Tablosu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0a0e17',
+                        cardBg: '#111625',
+                        borderClr: '#1f293d',
+                        vurgu: '#00f2ff',
+                        altin: '#ffd700',
+                        gumus: '#c0c0c0',
+                        bronz: '#cd7f32',
+                        metin: '#e0e0e0',
+                        beyaz: '#ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --ana-renk: #0f111a;
+            --kart-bg: #161925;
+            --vurgu: #00f2ff;
+            --altin: #ffd700;
+            --gumus: #c0c0c0;
+            --bronz: #cd7f32;
+            --metin: #e0e0e0;
+            --beyaz: #ffffff;
+            --status-color: #00ff88;
+            --gold-gradient: linear-gradient(90deg, #b8860b 0%, #ffd700 25%, #ffface 50%, #ffd700 75%, #b8860b 100%);
+            --header-gradient: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 50%, #00d2ff 100%);
+        }
+
+        body.light-theme {
+            --ana-renk: #f0f4f8 !important;
+            --kart-bg: #ffffff !important;
+            --vurgu: #000080 !important;
+            --metin: #000033 !important;
+            --altin: #a67c00 !important;
+            --beyaz: #000033 !important;
+            --status-color: #000080 !important;
+        }
+
+        * { transition: background-color 0.4s ease, color 0.4s ease; box-sizing: border-box; }
+
+        body { 
+            background-color: var(--ana-renk); 
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--metin);
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+        }
+
+        .board-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 40px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        .header h2 { 
+            margin: 0; font-size: 1.8rem; font-weight: 900;
+            background: var(--header-gradient);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine-blue 3s linear infinite;
+            width: 250px;
+        }
+
+        .project-center-title { text-align: center; flex-grow: 1; }
+        .main-title {
+            font-size: 2.2rem; font-weight: 900; letter-spacing: 3px;
+            background: var(--gold-gradient);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine-gold 2.5s linear infinite;
+            text-transform: uppercase;
+        }
+        .sub-title { font-size: 1.1rem; color: #d4af37; font-weight: 700; margin-top: -5px; }
+
+        @keyframes shine-gold { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
+        @keyframes shine-blue { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+
+        .status-block { display: flex; flex-direction: column; align-items: flex-end; width: 250px; }
+        .digital-clock { font-size: 1.8rem; font-family: monospace; font-weight: bold; color: var(--beyaz); text-shadow: 0 0 10px var(--vurgu); }
+        
+        .system-status { font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--beyaz); margin-top: 5px; }
+        .status-dot { height: 10px; width: 10px; background-color: #00ff88; border-radius: 50%; animation: pulse-glow 1.5s infinite; }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+
+        .table-container { flex-grow: 1; padding: 10px 30px; overflow: hidden; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        
+        tr { display: flex; width: 100%; border-radius: 12px; min-height: 65px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); align-items: center; }
+        th, td { flex: 1; text-align: center; font-size: 1.4rem; padding: 5px; display: flex; justify-content: center; align-items: center; }
+        
+        .col-rank { flex: 0.5; }
+        .col-name { flex: 3; justify-content: flex-start; padding-left: 30px; }
+        .col-status { flex: 1; }
+        .col-height { flex: 1.2; font-weight: 800; color: var(--vurgu); }
+        .col-time { flex: 1; }
+
+        .rank-1 { background: rgba(255, 215, 0, 0.15) !important; border: 2px solid var(--altin) !important; }
+        .rank-2 { border-left: 6px solid var(--gumus) !important; }
+        .rank-3 { border-left: 6px solid var(--bronz) !important; }
+
+        .footer-info { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: rgba(0,0,0,0.4); flex-shrink: 0; }
+        .waiting-text { font-style: italic; font-size: 0.9rem; color: var(--altin); margin-left: 15px; opacity: 0.7; }
+        .demolished-text { font-weight: bold; color: #ff4d4d; font-size: 1.1rem; }
+        .standing-text { font-weight: bold; color: #00ff88; font-size: 1.1rem; }
+
+        .controls { display: flex; align-items: center; gap: 25px; }
+        .icon-btn { cursor: pointer; font-size: 1.3rem; color: var(--beyaz); opacity: 0.7; transition: 0.3s; }
+        .icon-btn:hover { opacity: 1; color: var(--altin); }
+    </style>
+</head>
+<body>
+
+<div class="board-container">
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <button onclick="window.location.href='https://serkantutuncu9.github.io/Portal/'" style="background:none; border:none; color:white; cursor:pointer; font-size:1.5rem;">
+                <i class="fas fa-home"></i>
+            </button>
+            <h2>SKOR TABLOSU</h2>
+        </div>
+        <div class="project-center-title">
+            <div class="main-title">TÜRKİYE STEM YARIŞMASI</div>
+            <div class="sub-title">Kağıt Kule Yarışması</div>
+        </div>
+        <div class="status-block">
+            <div class="digital-clock" id="live-clock">00:00:00</div>
+            <div class="system-status"><span class="status-dot"></span> SİSTEM AKTİF</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr style="background: none; border: none; font-weight: bold; color: var(--altin);">
+                    <th class="col-rank">SIRA</th>
+                    <th class="col-name">TAKIM ADI</th>
+                    <th class="col-status">KULE DURUMU</th>
+                    <th class="col-height">YÜKSEKLİK</th>
+                    <th class="col-time">SÜRE</th>
+                </tr>
+            </thead>
+            <tbody id="display-area"></tbody>
+        </table>
+    </div>
+
+    <div class="footer-info">
+        <span id="total-label" style="color:var(--altin); font-weight:bold;">Yükleniyor...</span>
+        <span id="page-label" style="font-size: 1.1rem; letter-spacing: 1px;">Sayfa 1 / 1</span>
+        <div class="controls">
+            <i class="fas fa-lightbulb icon-btn" title="Tema Değiştir" onclick="document.body.classList.toggle('light-theme')"></i>
+            <i class="fas fa-expand icon-btn" title="Tam Ekran" onclick="toggleFullScreen()"></i>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allEntries = [];
+    let currentPage = 0;
+    const itemsPerPage = 9; 
+    
+    // Google Sheets CSV yayın linkinizi bu alana yapıştırmalısınız
+    const CSV_URL = 'BURAYA_SENSE_ETABLO_YAYIN_LINKINI_YAPISTIRMALISIN';
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+    }
+    
+    function updateClock() { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('tr-TR'); }
+    setInterval(updateClock, 1000);
+
+    async function fetchData() {
+        if (CSV_URL.includes("BURAYA_SENSE_ETABLO_YAYIN_LINKINI_YAPISTIRMALISIN") || !CSV_URL) {
+            allEntries = [];
+            renderTable();
+            return;
+        }
+
+        try {
+            const response = await fetch(CSV_URL + '&cb=' + Date.now());
+            const rawData = await response.text();
+            
+            const rows = rawData.split(/\r?\n/);
+            const separator = rows[0].includes(';') ? ';' : ',';
+            let tempEntries = [];
+
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i].trim()) continue;
+                
+                const cols = rows[i].split(separator);
+                
+                // cols[0]: Sıra No | cols[1]: takimid | cols[2]: takimadi | cols[3]: durum | cols[4]: yükseklik | cols[5]: süre
+                if (cols[2] && cols[2].trim() !== "" && !cols[2].includes("takimadi")) {
+                    let nameVal = cols[2].replace(/"/g, '').trim();
+                    let statusVal = cols[3]?.replace(/"/g, '').trim() || '';
+                    let heightRaw = cols[4]?.trim() || '0';
+                    let timeRaw = cols[5]?.trim() || '0';
+                    
+                    let heightVal = parseFloat(heightRaw.replace(',', '.'));
+                    let timeVal = parseFloat(timeRaw.replace(',', '.'));
+                    
+                    // Veri girilmemiş veya lobi aşamasında bekleyen kule tespiti
+                    const isWaiting = (statusVal === '' || statusVal === 'Yarışma bekleniyor...') && heightVal === 0 && timeVal === 0;
+                    
+                    tempEntries.push({
+                        name: nameVal,
+                        status: isWaiting ? 'Yarışma bekleniyor...' : statusVal, 
+                        height: isNaN(heightVal) ? 0 : heightVal,
+                        time: isNaN(timeVal) ? 0 : timeVal,
+                        isWaiting: isWaiting
+                    });
+                }
+            }
+            allEntries = tempEntries;
+            sortEntries();
+        } catch (err) { console.error("Veri hatası:", err); }
+    }
+
+    function sortEntries() {
+        allEntries.sort((a, b) => {
+            // 1. KURAL: Lobi aşamasında bekleyenler her zaman en alta gider.
+            if (a.isWaiting !== b.isWaiting) {
+                return a.isWaiting ? 1 : -1;
+            }
+            if (a.isWaiting && b.isWaiting) return 0;
+
+            // 2. KURAL: Ayakta duranlar her zaman Yıkılanların üstündedir.
+            if (a.status === "Ayakta" && b.status !== "Ayakta") return -1;
+            if (a.status !== "Ayakta" && b.status === "Ayakta") return 1;
+
+            // 3. KURAL: Kule durumu aynı ise (örneğin ikisi de ayakta veya ikisi de yıkık) yükseklik değerine göre sıralanır (Büyükten küçüğe).
+            if (b.height !== a.height) {
+                return b.height - a.height;
+            }
+
+            // 4. KURAL: Yükseklik de eşitse, en uzun süre dayanan kazanır (Büyükten küçüğe).
+            return b.time - a.time;
+        });
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('display-area');
+        
+        if (allEntries.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-500 italic font-bold text-lg">E-Tablo bağlantısı kuruluyor veya kayıtlı takım bulunmuyor...</td></tr>`;
+            document.getElementById('page-label').innerText = `Sayfa 0 / 0`;
+            document.getElementById('total-label').innerText = `Toplam 0 Takım`;
+            return;
+        }
+
+        const totalPages = Math.ceil(allEntries.length / itemsPerPage);
+        if (currentPage >= totalPages) currentPage = 0;
+
+        const start = currentPage * itemsPerPage;
+        const pageItems = allEntries.slice(start, start + itemsPerPage);
+
+        let html = "";
+        pageItems.forEach((item, index) => {
+            const globalRank = start + index + 1;
+            const isWaiting = item.isWaiting;
+            
+            let statusText = "";
+            if (isWaiting) {
+                statusText = '<span class="waiting-text">Yarışma bekleniyor...</span>';
+            } else if (item.status === "Ayakta") {
+                statusText = '<span class="standing-text"><i class="fas fa-check-circle mr-1"></i> Ayakta</span>';
+            } else {
+                statusText = '<span class="disabled-text demolished-text"><i class="fas fa-times-circle mr-1"></i> Yıkıldı</span>';
+            }
+            
+            let rankDisplay = globalRank;
+            let specialClass = "";
+            
+            // Sıralama madalyaları (Bekleyenler kürsü dışındadır)
+            if (globalRank === 1 && !isWaiting) {
+                rankDisplay = '<i class="fas fa-trophy text-2xl" style="color:var(--altin)"></i>';
+                specialClass = "rank-1";
+            } else if (globalRank === 2 && !isWaiting) {
+                specialClass = "rank-2";
+            } else if (globalRank === 3 && !isWaiting) {
+                specialClass = "rank-3";
+            }
+
+            html += `<tr class="${specialClass}">
+                <td class="col-rank">${rankDisplay}</td>
+                <td class="col-name"><strong>${item.name}</strong></td>
+                <td class="col-status">${statusText}</td>
+                <td class="col-height">${isWaiting ? '-' : item.height + ' cm'}</td>
+                <td class="col-time">${isWaiting ? '-' : item.time + ' sn'}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+        document.getElementById('page-label').innerText = `Sayfa ${currentPage + 1} / ${totalPages}`;
+        document.getElementById('total-label').innerText = `Toplam ${allEntries.length} Takım`;
+    }
+
+    async function startCycle() {
+        await fetchData(); 
+        renderTable();    
+
+        setInterval(async () => {
+            if (allEntries.length === 0) return;
+            const totalPages = Math.ceil(allEntries.length / itemsPerPage);
+            
+            currentPage++;
+            if (currentPage >= totalPages) {
+                currentPage = 0; 
+                await fetchData(); 
+            }
+            renderTable(); 
+        }, 12000); 
+    }
+
+    startCycle();
+    updateClock();
+</script>
+</body>
+</html>
