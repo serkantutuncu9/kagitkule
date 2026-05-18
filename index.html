@@ -210,6 +210,7 @@
                 
                 // cols[0]: Sıra No | cols[1]: takimid | cols[2]: takimadi | cols[3]: durum | cols[4]: yükseklik | cols[5]: süre
                 if (cols[2] && cols[2].trim() !== "" && !cols[2].toLowerCase().includes("takimadi")) {
+                    let teamIdVal = cols[1] ? cols[1].trim() : '';
                     let nameVal = cols[2];
                     let statusVal = cols[3] || '';
                     let heightRaw = cols[4] || '0';
@@ -224,6 +225,7 @@
                                       (isNaN(timeVal) || timeVal === 0);
                     
                     tempEntries.push({
+                        id: teamIdVal,
                         name: nameVal,
                         status: isWaiting ? 'Yarışma bekleniyor...' : statusVal, 
                         height: isNaN(heightVal) ? 0 : heightVal,
@@ -304,10 +306,14 @@
                 specialClass = "rank-3";
             }
 
-            // Takım isimlerinin başındaki numaraları (varsa) temizleyerek ekrana bas
+            // Takım isminin başındaki id'yi temizleyen fonksiyonu kaldırarak yerine 
+            // `cols[1]` (takimid) ve `cols[2]` (takimadi) değerlerini birleştirdiğimiz temiz formatı getiriyoruz.
             let formattedName = item.name;
-            if (formattedName.match(/^\d+\s+/)) {
-                formattedName = formattedName.replace(/^\d+\s+/, '');
+            
+            // Eğer ismin başında zaten ID numarası varsa tekrarlamamak için kontrol ediyoruz.
+            // Yoksa, sol başına "ID - " yapısında takım id'sini şık bir şekilde birleştiriyoruz.
+            if (item.id && !formattedName.startsWith(item.id)) {
+                formattedName = `${item.id} - ${formattedName}`;
             }
 
             html += `<tr class="${specialClass}">
