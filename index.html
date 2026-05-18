@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Kağıt Kule Canlı Skor Tablosu</title>
+    <title>STEM Kağıt Kule Skor Tablosu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -183,7 +183,7 @@
     let currentPage = 0;
     const itemsPerPage = 9; 
     
-    // Gönderdiğin tablonun Kağıt Kule (gid=763264118) sekmesine ait canlı CSV yayın linki
+    // Kağıt Kule sekmesinin doğrudan CSV olarak yayınlanan linki (gid=763264118)
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVfTp7wZiJaJ95n2H7NWiEWQIvn6SX7V6t8hK0FbsqCirFD-Os7KIMe4O1_Im3uOERV3VUYwdKcYod/pub?output=csv&gid=763264118';
 
     function toggleFullScreen() {
@@ -206,6 +206,7 @@
             for (let i = 1; i < rows.length; i++) {
                 if (!rows[i].trim()) continue;
                 
+                // Hücrelerdeki tırnak işaretlerini güvenli bir şekilde temizle
                 const cols = rows[i].split(separator).map(col => col.replace(/^"|"$/g, '').trim());
                 
                 // cols[0]: Sıra No | cols[1]: takimid | cols[2]: takimadi | cols[3]: durum | cols[4]: yükseklik | cols[5]: süre
@@ -306,12 +307,8 @@
                 specialClass = "rank-3";
             }
 
-            // Takım isminin başındaki id'yi temizleyen fonksiyonu kaldırarak yerine 
-            // `cols[1]` (takimid) ve `cols[2]` (takimadi) değerlerini birleştirdiğimiz temiz formatı getiriyoruz.
+            // Takım id'si ile takım adını şık bir şekilde birleştiriyoruz
             let formattedName = item.name;
-            
-            // Eğer ismin başında zaten ID numarası varsa tekrarlamamak için kontrol ediyoruz.
-            // Yoksa, sol başına "ID - " yapısında takım id'sini şık bir şekilde birleştiriyoruz.
             if (item.id && !formattedName.startsWith(item.id)) {
                 formattedName = `${item.id} - ${formattedName}`;
             }
